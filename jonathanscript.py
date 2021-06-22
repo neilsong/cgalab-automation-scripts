@@ -14,18 +14,29 @@ files += [join(PATH, fname) for fname in listdir(PATH) if join(PATH, fname).ends
 
 
 for file in files:
-    global xmin
+    global xmin,ymin,xmax,ymax
     # memoize data
     #rewrite
     
     for line in fileinput.input(file,inplace=0):
-        if line.startswith('<xmin>'):
+        if(line.startswith('<xmin>')):
             xmin=int(line[5:-7])
-        elif line.startswith('<ymin>'):
+        elif(line.startswith('<ymin>')):
             ymin=int(line[5:-7])
-        elif line.startswith('<xmax>'):
+        elif(line.startswith('<xmax>')):
             xmax=int(line[5:-7])
-        elif line.startswith('<ymax>'):
+        elif(line.startswith('<ymax>')):
             ymax=int(line[5:-7])
+    for line in fileinput.input(file,inplace=0):
+        if(line.startswith('<xmin>')):
+            xmin=int(line[5:-7])
+        elif(line.startswith('<ymin>')):
+            ymin=int(line[5:-7])
+        elif(line.startswith('<xmax>')):
+            xmax=int(line[5:-7])
+        elif(line.startswith('<ymax>')):
+            ymax=int(line[5:-7])
+
+            
         
         
