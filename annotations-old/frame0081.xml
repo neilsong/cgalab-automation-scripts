@@ -12,10 +12,11 @@
 	</size>
 	<segmented>0</segmented>
 	<object>
-		<name>R-N</name>
+        <name>hand</name>
 		<pose>Unspecified</pose>
 		<truncated>0</truncated>
 		<difficult>0</difficult>
+        <contactstate>0</constactstate>
 		<bndbox>
 			<xmin>453</xmin>
 			<ymin>150</ymin>
