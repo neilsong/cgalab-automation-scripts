@@ -1,4 +1,4 @@
 .venv
 settings.json
-annotations-old/*
+#annotations-old/*
 .DS_Store
