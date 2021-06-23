@@ -2,8 +2,9 @@ import fileinput
 from os import listdir
 from os.path import join, basename, split, splitext
 import sys
+import math
 
-PATH="/Users/mac/Desktop/cgalab-transformation"
+PATH="/Users/mac/Desktop/cgalab-transformation/annotations-old"
 files = []
 
 def path_leaf(path):
@@ -13,23 +14,136 @@ def path_leaf(path):
 files += [join(PATH, fname) for fname in listdir(PATH) if join(PATH, fname).endswith('.xml')]
 
 class object:
-    def __init__(xmin,ymin,xmax,ymax):
-        self.xmin=xmin
-        self.ymin=ymin
-        self.xmax=xmax
-        self.ymax=ymax
+    xmin=0
+    ymin=0
+    xmax=0
+    ymax=0
+    isObject = True #set default
     def xcenter(self):
-        
-for file in files:
-    global xmin,ymin,xmax,ymax
-    # memoize data
-    for line in fileinput.input(file,inplace=0):
+        return (xmin+xmax+1)/2
+    def ycenter(self):
+        return (ymin+ymax+1)/2
+class hand(object):
+    portable = -1
+    handside = -1
+    contactstate = -1
+    def dx():
+        return portable.xcenter-self.xcenter
+    def dy():
+        return portable.ycenter-self.ycenter
+    def mag():
+        return math.sqrt(dx*dx+dy*dy)
     
-        if line.startswith('<xmin>'):
-            xmin=int(line[5:-7])
+for file in files:
+    # memoize data
+    objArr = [object]
+    temp = object()
+    for line in fileinput.input(file,inplace=0):
+        if "</object>" in line:
+            objArr.append(temp)
+        elif '<xmin>' in line:
+            line = line.replace(' ', '')
+            line = line.replace('<xmin>', '')
+            line = line.replace('</xmin>', '')
+            line = line.replace('\t','')
+            line = line.replace('\n','')
+            temp.xmin = int(line)
         elif line.startswith('<ymin>'):
-            ymin=int(line[5:-7])
+            line = line.replace(' ', '')
+            line = line.replace('<ymin>', '')
+            line = line.replace('</ymin>', '')
+            line = line.replace('\t','')
+            line = line.replace('\n','')
+            temp.ymin = int(line)
         elif line.startswith('<xmax>'):
-            xmax=int(line[5:-7])
+            line = line.replace(' ', '')
+            line = line.replace('<xmax>', '')
+            line = line.replace('</xmax>', '')
+            line = line.replace('\t','')
+            line = line.replace('\n','')
+            temp.xmax = int(line)
         elif line.startswith('<ymax>'):
-            ymax=int(line[5:-7])
+            line = line.replace(' ', '')
+            line = line.replace('<ymax>', '')
+            line = line.replace('</ymax>', '')
+            line = line.replace('\t','')
+            line = line.replace('\n','')
+            temp.ymax = int(line)
+        elif '<name>' in line:
+            print('here')
+            if '-' in line:
+                temp = hand()
+                temp.isObject=False
+                if 'R' in line:
+                    print('here2')
+                    temp.handside=1
+                elif 'L' in line:
+                    temp.handside=0
+                if 'N' in line:
+                    temp.contactstate=0
+                elif 'S' in line:
+                    temp.contactstate=1
+                elif 'O' in line:
+                    temp.contactstate=2
+                elif 'P' in line:
+                    temp.contactstate=3
+                elif 'F' in line:
+                    temp.contactstate=0
+            elif 'O' in line:
+                temp = object()
+                temp.isObject=True
+
+    print(file)
+    i = 0
+    for line in fileinput.input(file,inplace=1):
+        temp = object()
+        if '<name>' in line and '>O<' not in line:
+            print('        <name>hand</name>')
+            temp = objArr[i]
+            i += 1
+            if not temp.isObject and 'P' in line:
+                for e in objArr:
+                    if e.isObject:
+                        dx = e.xcenter-temp.xcenter
+                        dy = e.ycenter-temp.ycenter
+                        mag = math.sqrt(dx*dx+dy*dy)
+                        if temp.portable!=-1 or mag < temp.mag:
+                            temp.portable = e
+        elif '<difficult>' in line:
+            print(line, end='')
+            if not temp.isObject:
+                print('        <contactstate>'+str(temp.contactstate)+"</constactstate>")
+            else:
+                print('        <contactstate></constactstate>')
+            if not temp.isObject and temp.portable != -1:
+                unitdx = float(temp.dx)/temp.mag
+                unitdy = float(temp.dy)/temp.mag
+                print("        <unitdx>"+str(unitdx)+"</unitdx>")
+                print("        <unitdy>"+str(unitdy)+"</unitdy>")
+                print("        <magnitude>"+str(temp.mag)+"</magnitude>")
+            else:
+                print("        <unitdx></unitdx>")
+                print("        <unitdy></unitdy>")
+                print("        <magnitude></magnitude>")
+            print("        <contactleft></contactleft>")
+            print("        <contactright></contactright>")
+            if not temp.isObject:
+                print("        <handside>"+str(temp.handside)+"</handside>")
+            else:
+                print("        <handside></handside>")
+        elif '</bndbox>' in line:
+            print(line, end='')
+            if not temp.isObject and temp.portable != -1:
+                print("        <objxmin>" + str(temp.portable.xmin) + "</objxmin>")
+                print("        <objymin>" + str(temp.portable.ymin) + "</objymin>")
+                print("        <objxmax>" + str(temp.portable.xmax) + "</objxmax>")
+                print("        <objymax>" + str(temp.portable.ymax) + "</objymax>")
+            else:
+                print("        <objxmin></objxmin>")
+                print("        <objymin></objymin>")
+                print("        <objxmax></objxmax>")
+                print("        <objymax></objymax>")
+                
+        else:
+            print(line, end='')
+            
