@@ -4,7 +4,8 @@ from os.path import join, basename, split, splitext
 import sys
 import math
 
-PATH="/Users/mac/Desktop/cgalab-transformation/annotations-old"
+o_PATH="/Users/mac/Desktop/cgalab-transformation/annotations-old"
+PATH="/home/cgalab/cgalab-transformation/annotations-old"
 files = []
 
 def path_leaf(path):
@@ -107,6 +108,7 @@ for file in files:
             if '>O<' not in line:
                 print('        <name>hand</name>')
                 temp = objArr[i]
+                print(type(temp))
                 if not temp.isObject and 'P' in line:
                     for e in objArr:
                         if e.isObject:
