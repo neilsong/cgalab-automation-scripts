@@ -5,7 +5,7 @@ import sys
 import math
 
 o_PATH="/Users/mac/Desktop/cgalab-transformation/annotations-old"
-PATH="/home/cgalab/cgalab-transformation/annotations-old"
+PATH="/home/cgalab/annotations-copy"
 files = []
 
 def path_leaf(path):
@@ -31,11 +31,11 @@ class hand(Object):
     handside = -1
     contactstate = -1
     def dx(self):
-        return self.portable.xcenter-self.xcenter
+        return self.portable.xcenter()-self.xcenter()
     def dy(self):
-        return self.portable.ycenter-self.ycenter
+        return self.portable.ycenter()-self.ycenter()
     def mag(self):
-        return math.sqrt(dx*dx+dy*dy)
+        return math.sqrt(self.dx()*self.dx()+self.dy()*self.dy())
 
 for file in files:
     # memoize data
@@ -53,21 +53,21 @@ for file in files:
             line = line.replace('\t','')
             line = line.replace('\n','')
             temp.xmin = int(line)
-        elif line.startswith('<ymin>'):
+        elif '<ymin>' in line:
             line = line.replace(' ', '')
             line = line.replace('<ymin>', '')
             line = line.replace('</ymin>', '')
             line = line.replace('\t','')
             line = line.replace('\n','')
             temp.ymin = int(line)
-        elif line.startswith('<xmax>'):
+        elif '<xmax>' in line:
             line = line.replace(' ', '')
             line = line.replace('<xmax>', '')
             line = line.replace('</xmax>', '')
             line = line.replace('\t','')
             line = line.replace('\n','')
             temp.xmax = int(line)
-        elif line.startswith('<ymax>'):
+        elif '<ymax>' in line:
             line = line.replace(' ', '')
             line = line.replace('<ymax>', '')
             line = line.replace('</ymax>', '')
@@ -101,21 +101,24 @@ for file in files:
 
     print(file)
     i = 0
+    temp = Object()
+    test = hand()
+    test.portable = Object()
+    test.isObject = False
+    objArr.append(test)
     for line in fileinput.input(file,inplace=1):
-        temp = Object()
-
         if '<name>' in line:
+            temp = objArr[i]
             if '>O<' not in line:
                 print('        <name>hand</name>')
                 temp = objArr[i]
-                print(type(temp))
                 if not temp.isObject and 'P' in line:
                     for e in objArr:
                         if e.isObject:
                             dx = e.xcenter()-temp.xcenter()
                             dy = e.ycenter()-temp.ycenter()
                             mag = math.sqrt(dx*dx+dy*dy)
-                            if temp.portable!=-1 or mag < temp.mag():
+                            if temp.portable==-1 or mag < temp.mag():
                                 temp.portable = e
             else:
                 print('        <name>targetobject</name>')
@@ -123,7 +126,7 @@ for file in files:
         elif '<difficult>' in line:
             print(line, end='')
             if not temp.isObject:
-                print('        <contactstate>'+str(temp.contactstate)+"BRUH</constactstate>")
+                print('        <contactstate>'+str(temp.contactstate)+"</constactstate>")
             else:
                 print('        <contactstate></constactstate>')
             if not temp.isObject and temp.portable != -1:
@@ -136,8 +139,19 @@ for file in files:
                 print("        <unitdx></unitdx>")
                 print("        <unitdy></unitdy>")
                 print("        <magnitude></magnitude>")
-            print("        <contactleft></contactleft>")
-            print("        <contactright></contactright>")
+            contact = [ obj.handside for obj in objArr if not obj.isObject and obj.portable == temp]
+            if temp.isObject and len(contact):
+                if 0 in contact:
+                    print("        <contactleft>1</contactleft>")
+                else:
+                    print("        <contactleft></contactleft>")
+                if 1 in contact:
+                    print("        <contactright>1</contactright>")
+                else:
+                    print("        <contactright></contactright>")
+                
+
+            
             if not temp.isObject:
                 print("        <handside>"+str(temp.handside)+"</handside>")
             else:
