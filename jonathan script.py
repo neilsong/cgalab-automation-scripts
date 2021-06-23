@@ -13,34 +13,38 @@ def path_leaf(path):
 
 files += [join(PATH, fname) for fname in listdir(PATH) if join(PATH, fname).endswith('.xml')]
 
-class object:
+class Object(object):
     xmin=0
     ymin=0
     xmax=0
     ymax=0
-    isObject = True #set default
+    isObject = True#set default
+
     def xcenter(self):
-        return (xmin+xmax+1)/2
+        return (self.xmin+self.xmax+1)/2
     def ycenter(self):
-        return (ymin+ymax+1)/2
-class hand(object):
+        return (self.ymin+self.ymax+1)/2
+    
+class hand(Object):
     portable = -1
     handside = -1
     contactstate = -1
-    def dx():
-        return portable.xcenter-self.xcenter
-    def dy():
-        return portable.ycenter-self.ycenter
-    def mag():
+    def dx(self):
+        return self.portable.xcenter-self.xcenter
+    def dy(self):
+        return self.portable.ycenter-self.ycenter
+    def mag(self):
         return math.sqrt(dx*dx+dy*dy)
-    
+
 for file in files:
     # memoize data
-    objArr = [object]
-    temp = object()
+    objArr = []
+    temp = Object()
     for line in fileinput.input(file,inplace=0):
+        
         if "</object>" in line:
             objArr.append(temp)
+            temp = Object()
         elif '<xmin>' in line:
             line = line.replace(' ', '')
             line = line.replace('<xmin>', '')
@@ -75,10 +79,10 @@ for file in files:
                 temp = hand()
                 temp.isObject=False
                 if 'R' in line:
-                    print('here2')
                     temp.handside=1
                 elif 'L' in line:
                     temp.handside=0
+                
                 if 'N' in line:
                     temp.contactstate=0
                 elif 'S' in line:
@@ -89,38 +93,43 @@ for file in files:
                     temp.contactstate=3
                 elif 'F' in line:
                     temp.contactstate=0
+                print("ct state " + str(temp.contactstate))
             elif 'O' in line:
-                temp = object()
+                temp = Object()
                 temp.isObject=True
 
     print(file)
     i = 0
     for line in fileinput.input(file,inplace=1):
-        temp = object()
-        if '<name>' in line and '>O<' not in line:
-            print('        <name>hand</name>')
-            temp = objArr[i]
-            i += 1
-            if not temp.isObject and 'P' in line:
-                for e in objArr:
-                    if e.isObject:
-                        dx = e.xcenter-temp.xcenter
-                        dy = e.ycenter-temp.ycenter
-                        mag = math.sqrt(dx*dx+dy*dy)
-                        if temp.portable!=-1 or mag < temp.mag:
-                            temp.portable = e
+        temp = Object()
+
+        if '<name>' in line:
+            if '>O<' not in line:
+                print('        <name>hand</name>')
+                temp = objArr[i]
+                if not temp.isObject and 'P' in line:
+                    for e in objArr:
+                        if e.isObject:
+                            dx = e.xcenter()-temp.xcenter()
+                            dy = e.ycenter()-temp.ycenter()
+                            mag = math.sqrt(dx*dx+dy*dy)
+                            if temp.portable!=-1 or mag < temp.mag():
+                                temp.portable = e
+            else:
+                print('        <name>targetobject</name>')
+            i+=1
         elif '<difficult>' in line:
             print(line, end='')
             if not temp.isObject:
-                print('        <contactstate>'+str(temp.contactstate)+"</constactstate>")
+                print('        <contactstate>'+str(temp.contactstate)+"BRUH</constactstate>")
             else:
                 print('        <contactstate></constactstate>')
             if not temp.isObject and temp.portable != -1:
-                unitdx = float(temp.dx)/temp.mag
-                unitdy = float(temp.dy)/temp.mag
+                unitdx = float(temp.dx())/temp.mag()
+                unitdy = float(temp.dy())/temp.mag()
                 print("        <unitdx>"+str(unitdx)+"</unitdx>")
                 print("        <unitdy>"+str(unitdy)+"</unitdy>")
-                print("        <magnitude>"+str(temp.mag)+"</magnitude>")
+                print("        <magnitude>"+str(temp.mag())+"</magnitude>")
             else:
                 print("        <unitdx></unitdx>")
                 print("        <unitdy></unitdy>")
