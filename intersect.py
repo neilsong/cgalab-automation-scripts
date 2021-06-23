@@ -26,4 +26,4 @@ for f in j_files:
     f = f.replace(".jpg", "")
     if f in a_files:
         
-        copyfile(j_PATH + '/' + f + ".jpg", d_PATH + '/'+ f + ".jpg")
+        copyfile(join(j_PATH, f + ".jpg"), join(d_PATH,f + ".jpg"))
