@@ -3,7 +3,7 @@ from os import listdir
 from os.path import join, basename, split, splitext
 import sys
 
-PATH="/Users/Bill/Desktop/cgalab-transformation"
+PATH="/Users/alenazhang/Documents/cgalab-transformation/annotations-old"
 files = []
 
 def path_leaf(path):
@@ -20,37 +20,58 @@ for file in files:
     # memoize data
     #rewrite
     
-    for line in fileinput.input(file,inplace=0):
-        if line.startswith('<xmin>'):
-            xmin=int(line[5:-7])
+    for line in fileinput.input(file):
+        if '<xmin>' in line:
+            line = line.replace(' ', '')
+            line = line.replace('<xmin>', '')
+            line = line.replace('</xmin', '')
+            xmin = line
         elif line.startswith('<ymin>'):
-            ymin=int(line[5:-7])
+            line = line.replace(' ', '')
+            line = line.replace('<ymin>', '')
+            line = line.replace('</ymin', '')
+            ymin = line
         elif line.startswith('<xmax>'):
-            xmax=int(line[5:-7])
+            line = line.replace(' ', '')
+            line = line.replace('<xmax>', '')
+            line = line.replace('</xmax', '')
+            xmax = line
         elif line.startswith('<ymax>'):
-            ymax=int(line[5:-7])
-        elif line.startswith('<name>'):
-            if (line[6]=='R'):
+            line = line.replace(' ', '')
+            line = line.replace('<ymax>', '')
+            line = line.replace('</ymax', '')
+            ymax = line
+        elif '<name>' in line:
+            print('here')
+            if 'R' in line:
+                print('here2')
                 handside=1
-            elif (line[6]=='L'):
+            elif 'L' in line:
                 handside=0
             
-            if (line[7]=='-'):
-                if (line[8]=='N'):
+            if '-' in line:
+                if 'N' in line:
                     contactstate=0
-                elif (line[8]=='S'):
+                elif 'S' in line:
                     contactstate=1
-                elif (line[8]=='O'):
+                elif 'O' in line:
                     contactstate=2
-                elif (line[8]=='P'):
+                elif 'P' in line:
                     contactstate=3
+                elif 'F' in line:
+                    contactstate=0
 
 
-        
+    print(file)
+    print(handside)
+
         
     for line in fileinput.input(file,inplace=1):
-        if line.startswith('<name>'):
-            print("<name>"+handside+"</name>")
-        elif line.startswith('<contactstate>'):
-            print("<contactstate>"+contactstate+"</constactstate>")
+        if '<name>' in line and '>O<' not in line:
+            print('        <name>hand</name>')
+        elif '<difficult>' in line:
+            print(line, end='')
+            print('        <contactstate>'+str(contactstate)+"</constactstate>")
+        else:
+            print(line, end='')
         
