@@ -126,9 +126,9 @@ for file in files:
         elif '<difficult>' in line:
             print(line, end='')
             if not temp.isObject:
-                print('        <contactstate>'+str(temp.contactstate)+"</constactstate>")
+                print('        <contactstate>'+str(temp.contactstate)+"</contactstate>")
             else:
-                print('        <contactstate></constactstate>')
+                print('        <contactstate></contactstate>')
             if not temp.isObject and temp.portable != -1:
                 unitdx = float(temp.dx())/temp.mag()
                 unitdy = float(temp.dy())/temp.mag()
